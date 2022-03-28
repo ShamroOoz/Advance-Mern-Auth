@@ -1,19 +1,33 @@
 import "dotenv/config";
 import express from "express";
 import { connectDB } from "./config/db.js";
-
+import Authrouter from "./routes/auth.js";
+import errorHandler from "./middleware/error.js";
 //app
 const app = express();
 //datbase connection
 connectDB();
 
 //Middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 //Test Route
 app.get("/", (req, res, next) => {
-  res.send("Api running");
+  setTimeout(() => {
+    try {
+      throw new Error("BROKEN");
+    } catch (err) {
+      next(err);
+    }
+  }, 100);
 });
+
+// Connecting Routes
+app.use("/api/auth", Authrouter);
+
+// Error Handler Middleware
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
