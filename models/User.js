@@ -76,7 +76,16 @@ UserSchema.methods.getResetPasswordToken = function () {
   // Set token expire date
   this.resetPasswordExpire = Date.now() + 10 * (60 * 1000); // Ten Minutes
 
-  return resetToken;
+  // Create reset url to email to provided email
+  const resetUrl = `${process.env.CLIENT_URL}/passwordreset/${resetToken}`;
+
+  // HTML Message
+  const message = `
+      <h1>You have requested a password reset</h1>
+      <p>Please make a put request to the following link:</p>
+      <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+    `;
+  return message;
 };
 
 export const User = mongoose.model("User", UserSchema);

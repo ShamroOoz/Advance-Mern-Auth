@@ -42,21 +42,9 @@ const forgotPassword = async (req, res, next) => {
     if (!user) {
       return next(new ErrorResponse("No email could not be sent", 404));
     }
-
     // Reset Token Gen and add to database hashed (private) version of token
-    const resetToken = user.getResetPasswordToken();
-
+    const message = user.getResetPasswordToken();
     await user.save();
-
-    // Create reset url to email to provided email
-    const resetUrl = `${process.env.CLIENT_URL}/passwordreset/${resetToken}`;
-
-    // HTML Message
-    const message = `
-      <h1>You have requested a password reset</h1>
-      <p>Please make a put request to the following link:</p>
-      <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
-    `;
 
     try {
       await sendEmail({
@@ -64,14 +52,13 @@ const forgotPassword = async (req, res, next) => {
         subject: "Password Reset Request",
         text: message,
       });
-
       res.status(200).json({ success: true, data: "Email Sent" });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save();
-      return next(new ErrorResponse("Email could not be sent", 500));
+      next(new ErrorResponse("Email could not be sent", 500));
     }
   } catch (err) {
     next(err);
@@ -83,6 +70,7 @@ const resetPassword = async (req, res, next) => {
     .createHash("sha256")
     .update(req.params.resetToken)
     .digest("hex");
+
   try {
     const user = await User.findOne({
       resetPasswordToken,
