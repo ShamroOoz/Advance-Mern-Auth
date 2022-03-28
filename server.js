@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { connectDB } from "./config/db.js";
 import Authrouter from "./routes/auth.js";
+import Privaterouter from "./routes/private.js";
 import errorHandler from "./middleware/error.js";
 //app
 const app = express();
@@ -25,6 +26,7 @@ app.get("/", (req, res, next) => {
 
 // Connecting Routes
 app.use("/api/auth", Authrouter);
+app.use("/api/private", Privaterouter);
 
 // Error Handler Middleware
 app.use(errorHandler);

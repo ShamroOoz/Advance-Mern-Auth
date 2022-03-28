@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import ErrorResponse from "../utils/errorResponse.js";
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -15,6 +16,7 @@ const UserSchema = new mongoose.Schema({
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       "Please provide a valid email",
     ],
+    lowercase: true,
   },
   password: {
     type: String,
@@ -26,6 +28,8 @@ const UserSchema = new mongoose.Schema({
   resetPasswordExpire: Date,
 });
 
+// instance method to to convert Password
+// this === user enter data
 UserSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     next();
@@ -35,10 +39,28 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
+// instance method to to getSignedJwtToken
 UserSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
+};
+
+// static method to login user
+// this === model("User")
+UserSchema.statics.login = async function (email, password) {
+  //check email and password available...
+  if (!email || !password) {
+    throw new ErrorResponse("Please provide an email and password", 400);
+  }
+  const user = await this.findOne({ email }).select("+password");
+  if (user) {
+    const auth = await bcrypt.compare(password, user.password);
+    if (auth) {
+      return user;
+    }
+  }
+  throw new ErrorResponse("Invalid credentials", 401);
 };
 
 export const User = mongoose.model("User", UserSchema);
