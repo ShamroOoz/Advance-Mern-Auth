@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import ErrorResponse from "../utils/errorResponse.js";
+import crypto from "crypto";
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -61,6 +62,21 @@ UserSchema.statics.login = async function (email, password) {
     }
   }
   throw new ErrorResponse("Invalid credentials", 401);
+};
+
+UserSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(20).toString("hex");
+
+  // Hash token (private key) and save to database
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // Set token expire date
+  this.resetPasswordExpire = Date.now() + 10 * (60 * 1000); // Ten Minutes
+
+  return resetToken;
 };
 
 export const User = mongoose.model("User", UserSchema);
