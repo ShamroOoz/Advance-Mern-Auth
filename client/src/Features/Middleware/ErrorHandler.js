@@ -11,31 +11,20 @@ const customToast = (message) =>
     </div>
   );
 
-export const ErrorHandler = (httpStatus, { success }) => {
+export const ErrorHandler = (httpStatus, { success, error }) => {
   switch (httpStatus) {
+    case 409:
+      !success && customToast(error);
+      break;
     case 400:
-      !success && customToast("Acount with this email already exist..");
+      !success && customToast("credentials Missing....Fill all fields..");
       break;
-    // 401: not logged in
-    // If you are not logged in, jump to the login page and carry the path of the current page
     case 401:
-      console.log("You are not logged in, please log in first");
-      window.location.reload();
-      break;
-    //Jump to login page
-    case 403:
-      console.log("Login expired, please login again'");
-      // Clear all cached data
-      window.localStorage.clear();
-      window.location.reload();
-      break;
-    // 404request does not exist
-    case 404:
-      console.log("network request does not exist");
+      !success && customToast(error);
       break;
     // Other errors, throw an error message directly
     default:
-      console.log(" don't know what's wrong");
+      !success && customToast(" Server Error..Contact website Creator");
       break;
   }
 };

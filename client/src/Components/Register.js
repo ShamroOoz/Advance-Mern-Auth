@@ -3,7 +3,7 @@ import Oauthbutton from "../Pages/Oauthbutton";
 import { Formik } from "formik";
 import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useRegisterUserMutation } from "../Features/Slices/AuthapiSlice";
 import { useDispatch } from "react-redux";
 import { updateAccessToken } from "../Features/Slices/authSlice";
@@ -18,22 +18,19 @@ const Register = () => {
   //update hOOKK
   const [RegisterUser, { isLoading }] = useRegisterUserMutation();
   let navigate = useNavigate();
+  let location = useLocation();
   const dispatch = useDispatch();
+
+  let from = location.state?.from?.pathname || "/";
 
   //
   const onSubmit = async (values, actions) => {
-    try {
-      console.log("Form data", values);
-      let data = await RegisterUser(values).unwrap();
-      if (data && data?.sucess) {
-        localStorage.setItem("jwt-token", data.token);
-        dispatch(updateAccessToken(data.token));
-        actions.setSubmitting(false);
-        actions.resetForm();
-        // navigate("/", { replace: true });
-      }
-    } catch (error) {
-      console.log(error);
+    let data = await RegisterUser(values).unwrap();
+    if (data && data?.sucess) {
+      dispatch(updateAccessToken(data));
+      actions.setSubmitting(false);
+      actions.resetForm();
+      navigate(from, { replace: true });
     }
   };
 

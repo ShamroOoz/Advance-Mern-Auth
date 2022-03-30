@@ -2,12 +2,12 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 //GlobalSlice
 import { GlobalSplitApi } from "./GlobalSplitApi";
-import authSlice from "./Slices/AuthapiSlice";
+import authSlice from "./Slices/authSlice";
 
 //reducers
 const reducer = {
   [GlobalSplitApi.reducerPath]: GlobalSplitApi.reducer,
-  Userauth: authSlice,
+  user: authSlice,
 };
 
 //config store

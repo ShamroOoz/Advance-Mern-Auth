@@ -3,16 +3,34 @@ import Oauthbutton from "../Pages/Oauthbutton";
 import { Formik } from "formik";
 import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useLoginUserMutation } from "../Features/Slices/AuthapiSlice";
+import { useDispatch } from "react-redux";
+import { updateAccessToken } from "../Features/Slices/authSlice";
 import {
   loginValidationSchema,
   loginInitialValues,
-  onSubmit,
   loginInputs as inputs,
 } from "./Formik/utils";
 
 const Login = () => {
+  const [LoginUser, { isLoading }] = useLoginUserMutation();
+  let navigate = useNavigate();
+  let location = useLocation();
+  const dispatch = useDispatch();
+
+  let from = location.state?.from?.pathname || "/";
+
+  const onSubmit = async (values, actions) => {
+    let data = await LoginUser(values).unwrap();
+    if (data && data?.sucess) {
+      dispatch(updateAccessToken(data));
+      actions.setSubmitting(false);
+      actions.resetForm();
+      navigate(from, { replace: true });
+    }
+  };
+
   return (
     <div className=" mt-11 flex max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg dark:bg-gray-800 lg:max-w-4xl">
       <div className="hidden bg-cover lg:block lg:w-1/2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
@@ -65,7 +83,7 @@ const Login = () => {
                   type="submit"
                   className="w-full disabled:cursor-not-allowed disabled:opacity-60 px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded hover:bg-gray-600 focus:outline-none focus:bg-gray-600"
                 >
-                  Login
+                  {isLoading ? "Loging in.... ✔" : "  Login "}
                 </button>
               </div>
             </Form>

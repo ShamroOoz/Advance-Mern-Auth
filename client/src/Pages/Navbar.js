@@ -1,13 +1,19 @@
 import React, { useReducer } from "react";
 import { NavLink, Link } from "react-router-dom";
+import { MenuIcon, UserCircleIcon } from "@heroicons/react/outline";
+import { useSelector } from "react-redux";
+import { userSelector } from "../Features/Slices/authSlice";
 
 const NavBarLinks = [
   { name: "Home", link: "/", id: 1 },
-  { name: "About", link: "/", id: 2 },
-  { name: "Contact", link: "/", id: 3 },
+  { name: "About", link: "about", id: 2 },
+  { name: "Contact", link: "contact", id: 3 },
 ];
 
 const Navbar = () => {
+  const { status } = useSelector(userSelector);
+
+  //Link Active Logic
   const isActive = ({ isActive }) =>
     [
       "px-2 py-1 mx-2 mt-2 text-sm font-medium  transition-colors duration-200 transform rounded-md md:mt-0  hover:bg-gray-300",
@@ -34,15 +40,12 @@ const Navbar = () => {
               <button
                 type="button"
                 onClick={() => setShow()}
-                className="text-gray-500 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400 focus:outline-none focus:text-gray-600 dark:focus:text-gray-400"
+                className={`${
+                  show ? "text-gray-500" : "text-blue-500"
+                } dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400 focus:outline-none focus:text-gray-600 dark:focus:text-gray-400`}
                 aria-label="toggle menu"
               >
-                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-current">
-                  <path
-                    fillRule="evenodd"
-                    d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"
-                  ></path>
-                </svg>
+                <MenuIcon className="w-6 h-6 fill-current" />
               </button>
             </div>
           </div>
@@ -61,29 +64,32 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center mt-4 md:mt-0">
-              <NavLink to="login" className={isActive}>
-                Login
-              </NavLink>
-              <NavLink to="register" className={isActive}>
-                Register
-              </NavLink>
-              <button
-                type="button"
-                className="flex items-center focus:outline-none"
-                aria-label="toggle profile dropdown"
-              >
-                <div className="w-8 h-8 overflow-hidden border-2 border-gray-400 rounded-full">
-                  <img
-                    src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
-                    className="object-cover w-full h-full"
-                    alt="avatar"
-                  />
-                </div>
-
-                <h3 className="mx-2 text-sm font-medium text-gray-700 dark:text-gray-200 md:hidden">
-                  Khatab wedaa
-                </h3>
-              </button>
+              {!status ? (
+                <>
+                  <NavLink to="login" className={isActive}>
+                    Login
+                  </NavLink>
+                  <NavLink to="register" className={isActive}>
+                    Register
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="user-profile"
+                    type="button"
+                    className="flex items-center focus:outline-none"
+                    aria-label="toggle profile dropdown"
+                  >
+                    <div className="w-8 h-8 overflow-hidden  ring-1 rounded-full hover:ring-indigo-700 hover:ring-2 ring-indigo-500">
+                      <UserCircleIcon className="object-cover w-full h-full text-gray-700" />
+                    </div>
+                  </Link>
+                  <NavLink to="/hfhfhfhh" type="button" className={isActive}>
+                    Logout
+                  </NavLink>
+                </>
+              )}
             </div>
           </div>
         </div>
