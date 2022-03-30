@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useReducer } from "react";
 import { NavLink, Link } from "react-router-dom";
 
 const NavBarLinks = [
@@ -15,6 +15,7 @@ const Navbar = () => {
     ]
       .filter(Boolean)
       .join(" ");
+  const [show, setShow] = useReducer((state) => !state, true);
 
   return (
     <nav className="bg-white shadow dark:bg-gray-800">
@@ -29,10 +30,10 @@ const Navbar = () => {
                 Mern Auth
               </Link>
             </div>
-
             <div className="flex md:hidden">
               <button
                 type="button"
+                onClick={() => setShow()}
                 className="text-gray-500 dark:text-gray-200 hover:text-gray-600 dark:hover:text-gray-400 focus:outline-none focus:text-gray-600 dark:focus:text-gray-400"
                 aria-label="toggle menu"
               >
@@ -46,7 +47,11 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="flex-1 md:flex md:items-center md:justify-between">
+          <div
+            className={`flex-1 md:flex md:items-center md:justify-between ${
+              show ? "hidden" : "block"
+            } `}
+          >
             <div className="flex flex-col -mx-4 md:flex-row md:items-center md:mx-8">
               {NavBarLinks.map(({ name, link, id }) => (
                 <NavLink key={id} to={link} className={isActive}>

@@ -1,45 +1,21 @@
 import React from "react";
-import Oauthbutton from "../Pages/Oauthbutton";
 import { Formik } from "formik";
 import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
-import { Link, useNavigate } from "react-router-dom";
-import { useRegisterUserMutation } from "../Features/Slices/AuthapiSlice";
-import { useDispatch } from "react-redux";
-import { updateAccessToken } from "../Features/Slices/authSlice";
+import { Link } from "react-router-dom";
 
 import {
-  singUpValidationSchem,
-  singUpInitialValues,
-  singupInputs as inputs,
+  resetValidationSchem,
+  resetInitialValues,
+  onSubmit,
+  resetInputs as inputs,
 } from "./Formik/utils";
 
-const Register = () => {
-  //update hOOKK
-  const [RegisterUser, { isLoading }] = useRegisterUserMutation();
-  let navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  //
-  const onSubmit = async (values, actions) => {
-    try {
-      console.log("Form data", values);
-      let data = await RegisterUser(values).unwrap();
-      if (data && data?.sucess) {
-        localStorage.setItem("jwt-token", data.token);
-        dispatch(updateAccessToken(data.token));
-        actions.setSubmitting(false);
-        actions.resetForm();
-        // navigate("/", { replace: true });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  ///
+const PasswordReset = () => {
   return (
-    <div className=" mt-4 flex max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg dark:bg-gray-800 lg:max-w-4xl">
+    <div className=" mt-11 flex max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg dark:bg-gray-800 lg:max-w-4xl">
+      <div className="hidden bg-cover lg:block lg:w-1/2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+
       <div className="w-full px-6 py-8 md:px-8 lg:w-1/2">
         <h2 className="text-2xl font-semibold text-center text-gray-700 dark:text-white">
           Brand
@@ -49,21 +25,19 @@ const Register = () => {
           Welcome back!
         </p>
 
-        <Oauthbutton />
-
         <div className="flex items-center justify-between mt-4">
           <span className="w-1/5 border-b dark:border-gray-600 lg:w-1/4"></span>
 
           <span className="text-xs text-center text-gray-500 uppercase dark:text-gray-400 ">
-            Create a account
+            Enter new Password
           </span>
 
           <span className="w-1/5 border-b dark:border-gray-400 lg:w-1/4"></span>
         </div>
 
         <Formik
-          initialValues={singUpInitialValues}
-          validationSchema={singUpValidationSchem}
+          initialValues={resetInitialValues}
+          validationSchema={resetValidationSchem}
           onSubmit={onSubmit}
           validateOnChange={true}
         >
@@ -75,11 +49,11 @@ const Register = () => {
 
               <div className="mt-4">
                 <button
-                  disabled={!isValid || isSubmitting || isLoading}
+                  disabled={!isValid || isSubmitting}
                   type="submit"
                   className="w-full disabled:cursor-not-allowed disabled:opacity-60 px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded hover:bg-gray-600 focus:outline-none focus:bg-gray-600"
                 >
-                  {isLoading ? "Registering.... ✔" : "Sing Up"}
+                  Reset
                 </button>
               </div>
             </Form>
@@ -92,16 +66,14 @@ const Register = () => {
             to="/login"
             className="text-xs text-gray-500 uppercase dark:text-gray-400 hover:underline"
           >
-            Have an account?
-            <span className="text-gray-700 underline"> Log in</span>
+            Take me Back to Login
           </Link>
 
           <span className="w-1/5 border-b dark:border-gray-600 md:w-1/4"></span>
         </div>
       </div>
-      <div className="hidden bg-cover lg:block lg:w-1/2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
     </div>
   );
 };
 
-export default Register;
+export default PasswordReset;

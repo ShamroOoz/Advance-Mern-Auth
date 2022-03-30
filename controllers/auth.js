@@ -8,11 +8,65 @@ const sendToken = (user, statusCode, res) => {
   res.status(statusCode).json({ sucess: true, token });
 };
 
+const Logout = async (req, res, next) => {
+  const cookies = req.cookies;
+
+  if (!cookies?.jwt) return next(new ErrorResponse("No content", 204));
+
+  const refreshToken = cookies.jwt;
+
+  try {
+    // Is refreshToken in db?
+    const foundUser = await User.findOne({ refreshToken }).exec();
+
+    if (!foundUser) {
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      });
+      return next(new ErrorResponse("No content", 204));
+    }
+    // Delete refreshToken in db
+    foundUser.refreshToken = "";
+    const result = await foundUser.save();
+
+    console.log(result);
+
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+
+    res.status(204).json({ sucess: true, message: "Logout Done..." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const handleRefreshToken = async (req, res, next) => {
+  const cookies = req.cookies;
+  if (!cookies?.jwt)
+    return next(new ErrorResponse("Not authorized to access this route", 401));
+
+  const refreshToken = cookies.jwt;
+
+  try {
+    const user = await User.RefreshTokenfun(refreshToken);
+    sendToken(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const login = async (req, res, next) => {
   const { email, password } = req.body;
   try {
     // Check that user exists by email
     const user = await User.login(email, password);
+    res.cookie("jwt", user.refreshToken, {
+      httpOnly: true,
+      sameSite: "None",
+      maxAge: 24 * 60 * 60 * 1000,
+    }); //secure: true,
+
     sendToken(user, 200, res);
   } catch (err) {
     next(err);
@@ -21,17 +75,21 @@ const login = async (req, res, next) => {
 
 const register = async (req, res, next) => {
   const { username, email, password } = req.body;
+  if (!username || !email || !password)
+    return next(new ErrorResponse("credentials Missing....", 400));
+
   try {
     const user = await User.create({
       username,
       email,
       password,
     });
-    sendToken(user, 200, res);
+    sendToken(user, 201, res);
   } catch (error) {
     next(error);
   }
 };
+
 const forgotPassword = async (req, res, next) => {
   // Send Email to email provided but first check if user exists
   const { email } = req.body;
@@ -97,4 +155,11 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-export { login, register, forgotPassword, resetPassword };
+export {
+  login,
+  register,
+  forgotPassword,
+  resetPassword,
+  handleRefreshToken,
+  Logout,
+};

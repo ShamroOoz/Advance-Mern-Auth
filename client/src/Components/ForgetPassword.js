@@ -22,7 +22,7 @@ const ForgetPassword = () => {
         <Formik
           initialValues={{ email: "" }}
           validationSchema={Yup.object({
-            email: Yup.string().email().required("Required"),
+            email: Yup.string().email().required("Email Required"),
           })}
           onSubmit={onSubmit}
           validateOnChange={true}

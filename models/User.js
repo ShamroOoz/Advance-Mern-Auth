@@ -25,6 +25,7 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
+  refreshToken: String,
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
@@ -43,7 +44,7 @@ UserSchema.pre("save", async function (next) {
 // instance method to to getSignedJwtToken
 UserSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
+    expiresIn: "30s",
   });
 };
 
@@ -58,10 +59,27 @@ UserSchema.statics.login = async function (email, password) {
   if (user) {
     const auth = await bcrypt.compare(password, user.password);
     if (auth) {
-      return user;
+      const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+      user.refreshToken = refreshToken;
+      const result = await user.save();
+      return result;
     }
   }
   throw new ErrorResponse("Invalid credentials", 401);
+};
+
+UserSchema.statics.RefreshTokenfun = async function (refreshToken) {
+  const foundUser = await this.findOne({ refreshToken }).exec();
+
+  if (!foundUser) throw new ErrorResponse("Forbidden access this route", 403);
+  // evaluate jwt
+  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err || foundUser.id !== decoded.id)
+      throw new ErrorResponse("Forbidden access this route", 403);
+  });
+  return foundUser;
 };
 
 UserSchema.methods.getResetPasswordToken = function () {
@@ -77,7 +95,7 @@ UserSchema.methods.getResetPasswordToken = function () {
   this.resetPasswordExpire = Date.now() + 10 * (60 * 1000); // Ten Minutes
 
   // Create reset url to email to provided email
-  const resetUrl = `${process.env.CLIENT_URL}/passwordreset/${resetToken}`;
+  const resetUrl = `${process.env.CLIENT_URL}/password-reset/${resetToken}`;
 
   // HTML Message
   const message = `

@@ -6,13 +6,19 @@ const router = Router();
 import {
   login,
   register,
+  Logout,
   forgotPassword,
   resetPassword,
+  handleRefreshToken,
 } from "../controllers/auth.js";
 
 router.route("/register").post(register);
 
 router.route("/login").post(login);
+
+router.route("/logout").get(Logout);
+
+router.route("/refresh").get(handleRefreshToken);
 
 router.route("/forgotpassword").post(forgotPassword);
 

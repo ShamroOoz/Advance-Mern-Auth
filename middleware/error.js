@@ -6,13 +6,13 @@ export const errorHandler = (err, req, res, next) => {
   error.message = err.message;
 
   if (err.code === 11000) {
-    const message = `Duplicate Field value entered`;
-    error = new ErrorResponse(message, 400);
+    const message = `User with this credentials Already exist...`;
+    error = new ErrorResponse(message, 409);
   }
 
   if (err.name === "ValidationError") {
     const message = Object.values(err.errors).map((val) => val.message);
-    error = new ErrorResponse(message, 400);
+    error = new ErrorResponse(message, 401);
   }
 
   res.status(error.statusCode || 500).json({
