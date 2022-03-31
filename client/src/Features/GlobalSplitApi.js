@@ -2,6 +2,9 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { ErrorHandler } from "./Middleware/ErrorHandler";
 import toast from "react-hot-toast";
 import { ShieldCheckIcon } from "@heroicons/react/outline";
+import { updateAccessToken, resetTodefault } from "./Slices/authSlice";
+import { Mutex } from "async-mutex";
+
 const customToast = () =>
   toast.custom(
     <div className="px-8 py-6 bg-green-400 text-white flex justify-between rounded">
@@ -20,11 +23,50 @@ const baseQuery = fetchBaseQuery({
       headers.set("authorization", `Bearer ${token}`);
     }
     headers.set("Content-Type", "application/json");
+    headers.set("Accept", "application/json");
+
     return headers;
   },
 });
+
+// create a new mutex
+const mutex = new Mutex();
+
 const baseQueryWithIntercept = async (args, api, extraOptions) => {
-  const result = await baseQuery(args, api, extraOptions);
+  // wait until the mutex is available without locking it
+  await mutex.waitForUnlock();
+
+  let result = await baseQuery(args, api, extraOptions);
+
+  if (result.error && result.error.status === 401) {
+    // checking whether the mutex is locked
+    if (!mutex.isLocked()) {
+      const release = await mutex.acquire();
+
+      try {
+        const refreshResult = await baseQuery(
+          { url: "/auth/refresh", method: "get", credentials: "include" },
+          api,
+          extraOptions
+        );
+        if (refreshResult.data) {
+          api.dispatch(updateAccessToken(refreshResult.data));
+          // retry the initial query
+          result = await baseQuery(args, api, extraOptions);
+        } else {
+          api.dispatch(resetTodefault());
+        }
+      } finally {
+        // release must be called once the mutex should be released again.
+        release();
+      }
+    } else {
+      // wait until the mutex is available without locking it
+      await mutex.waitForUnlock();
+      result = await baseQuery(args, api, extraOptions);
+    }
+  }
+
   console.log(result, "Interceptor");
   const { data, error } = result;
   //If you encounter an error

@@ -8,9 +8,9 @@ import Privaterouter from "./routes/private.js";
 import errorHandler from "./middleware/error.js";
 import cors from "cors";
 import morgan from "morgan";
-import cookieParser from "cookie-parser";
 import credentials from "./middleware/credentials.js";
 import ErrorResponse from "./utils/errorResponse.js";
+import CookieParser from "cookie-parser";
 //app
 const app = express();
 //datbase connection
@@ -27,13 +27,14 @@ app.use(credentials);
 
 // Cross Origin Resource Sharing
 app.use(cors(corsOptions));
+
 // built-in middleware to handle urlencoded form data
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 // built-in middleware for json
 app.use(express.json());
 
 //middleware for cookies
-app.use(cookieParser());
+app.use(CookieParser());
 
 // Connecting Routes
 app.use("/api/auth", Authrouter);

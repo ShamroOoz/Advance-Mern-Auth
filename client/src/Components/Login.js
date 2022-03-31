@@ -5,8 +5,7 @@ import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useLoginUserMutation } from "../Features/Slices/AuthapiSlice";
-import { useDispatch } from "react-redux";
-import { updateAccessToken } from "../Features/Slices/authSlice";
+
 import {
   loginValidationSchema,
   loginInitialValues,
@@ -17,14 +16,12 @@ const Login = () => {
   const [LoginUser, { isLoading }] = useLoginUserMutation();
   let navigate = useNavigate();
   let location = useLocation();
-  const dispatch = useDispatch();
 
   let from = location.state?.from?.pathname || "/";
 
   const onSubmit = async (values, actions) => {
     let data = await LoginUser(values).unwrap();
     if (data && data?.sucess) {
-      dispatch(updateAccessToken(data));
       actions.setSubmitting(false);
       actions.resetForm();
       navigate(from, { replace: true });

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-
+import { AuthapiSlice as api } from "./AuthapiSlice";
 const initialState = {
   accessToken: null,
   status: false,
@@ -17,6 +17,33 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.status = false;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addMatcher(
+      api.endpoints.logoutUser.matchFulfilled,
+      (state, action) => {
+        state.accessToken = null;
+        state.status = false;
+      }
+    );
+    builder.addMatcher(
+      api.endpoints.loginUser.matchFulfilled,
+      (state, { payload }) => {
+        if (payload?.sucess) {
+          state.accessToken = payload?.token;
+          state.status = true;
+        }
+      }
+    );
+    builder.addMatcher(
+      api.endpoints.registerUser.matchFulfilled,
+      (state, { payload }) => {
+        if (payload?.sucess) {
+          state.accessToken = payload?.token;
+          state.status = true;
+        }
+      }
+    );
   },
 });
 

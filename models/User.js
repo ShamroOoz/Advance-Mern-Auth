@@ -72,7 +72,6 @@ UserSchema.statics.login = async function (email, password) {
 
 UserSchema.statics.RefreshTokenfun = async function (refreshToken) {
   const foundUser = await this.findOne({ refreshToken }).exec();
-
   if (!foundUser) throw new ErrorResponse("Forbidden access this route", 403);
   // evaluate jwt
   jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {

@@ -2,16 +2,28 @@ import React from "react";
 import { Formik } from "formik";
 import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
-import { Link } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { useResetPasswordMutation } from "../Features/Slices/AuthapiSlice";
 
 import {
   resetValidationSchem,
   resetInitialValues,
-  onSubmit,
   resetInputs as inputs,
 } from "./Formik/utils";
 
 const PasswordReset = () => {
+  let { token } = useParams();
+  const [ResetPassword, { isLoading }] = useResetPasswordMutation();
+  let navigate = useNavigate();
+  const onSubmit = async (values, actions) => {
+    let data = await ResetPassword({ ...values, resetToken: token }).unwrap();
+    if (data && data?.success) {
+      actions.setSubmitting(false);
+      actions.resetForm();
+      navigate("/login");
+    }
+  };
+
   return (
     <div className=" mt-11 flex max-w-sm mx-auto overflow-hidden bg-white rounded-lg shadow-lg dark:bg-gray-800 lg:max-w-4xl">
       <div className="hidden bg-cover lg:block lg:w-1/2 bg-gradient-to-r from-purple-500 to-pink-500"></div>
@@ -49,11 +61,11 @@ const PasswordReset = () => {
 
               <div className="mt-4">
                 <button
-                  disabled={!isValid || isSubmitting}
+                  disabled={!isValid || isSubmitting || isLoading}
                   type="submit"
                   className="w-full disabled:cursor-not-allowed disabled:opacity-60 px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded hover:bg-gray-600 focus:outline-none focus:bg-gray-600"
                 >
-                  Reset
+                  {isLoading ? "Reseting.... ✔" : "Reset "}
                 </button>
               </div>
             </Form>

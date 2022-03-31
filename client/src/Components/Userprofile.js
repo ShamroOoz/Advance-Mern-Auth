@@ -1,6 +1,9 @@
 import React from "react";
+import { useLazyPrivateDataQuery } from "../Features/Slices/AuthapiSlice";
 
 const Userprofile = () => {
+  const [trigger] = useLazyPrivateDataQuery();
+
   return (
     <div className="max-w-xs mx-auto overflow-hidden mt-9 bg-white rounded-lg shadow-lg dark:bg-gray-800">
       <img
@@ -16,6 +19,13 @@ const Userprofile = () => {
         <span className="text-sm text-gray-700 dark:text-gray-200">
           Software Engineer
         </span>
+
+        <button
+          onClick={() => trigger()}
+          className="mt-4 py-1.5 block px-4 transition-colors w-full bg-blue-50 border active:bg-gray-200 font-medium border-gray-200 text-gray-900 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+        >
+          Protected
+        </button>
       </div>
     </div>
   );

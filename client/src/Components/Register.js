@@ -5,8 +5,6 @@ import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useRegisterUserMutation } from "../Features/Slices/AuthapiSlice";
-import { useDispatch } from "react-redux";
-import { updateAccessToken } from "../Features/Slices/authSlice";
 
 import {
   singUpValidationSchem,
@@ -19,7 +17,6 @@ const Register = () => {
   const [RegisterUser, { isLoading }] = useRegisterUserMutation();
   let navigate = useNavigate();
   let location = useLocation();
-  const dispatch = useDispatch();
 
   let from = location.state?.from?.pathname || "/";
 
@@ -27,7 +24,6 @@ const Register = () => {
   const onSubmit = async (values, actions) => {
     let data = await RegisterUser(values).unwrap();
     if (data && data?.sucess) {
-      dispatch(updateAccessToken(data));
       actions.setSubmitting(false);
       actions.resetForm();
       navigate(from, { replace: true });

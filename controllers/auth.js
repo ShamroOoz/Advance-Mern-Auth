@@ -31,11 +31,9 @@ const Logout = async (req, res, next) => {
     foundUser.refreshToken = "";
     const result = await foundUser.save();
 
-    console.log(result);
-
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
 
-    res.status(204).json({ sucess: true, message: "Logout Done..." });
+    res.status(201).json({ sucess: true, message: "Logout Done..." });
   } catch (error) {
     next(error);
   }
@@ -43,6 +41,7 @@ const Logout = async (req, res, next) => {
 
 const handleRefreshToken = async (req, res, next) => {
   const cookies = req.cookies;
+
   if (!cookies?.jwt)
     return next(new ErrorResponse("Not authorized to access this route", 401));
 
@@ -61,12 +60,13 @@ const login = async (req, res, next) => {
   try {
     // Check that user exists by email
     const user = await User.login(email, password);
+
     res.cookie("jwt", user.refreshToken, {
       httpOnly: true,
-      sameSite: "None",
+      sameSite: "none",
+      secure: true,
       maxAge: 24 * 60 * 60 * 1000,
-    }); //secure: true,
-
+    });
     sendToken(user, 200, res);
   } catch (err) {
     next(err);
@@ -93,12 +93,13 @@ const register = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   // Send Email to email provided but first check if user exists
   const { email } = req.body;
+  console.log(email);
 
   try {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return next(new ErrorResponse("No email could not be sent", 404));
+      return next(new ErrorResponse("No user  Found..", 404));
     }
     // Reset Token Gen and add to database hashed (private) version of token
     const message = user.getResetPasswordToken();

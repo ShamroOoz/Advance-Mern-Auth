@@ -3,6 +3,7 @@ import { NavLink, Link } from "react-router-dom";
 import { MenuIcon, UserCircleIcon } from "@heroicons/react/outline";
 import { useSelector } from "react-redux";
 import { userSelector } from "../Features/Slices/authSlice";
+import { useLazyLogoutUserQuery } from "../Features/Slices/AuthapiSlice";
 
 const NavBarLinks = [
   { name: "Home", link: "/", id: 1 },
@@ -12,6 +13,7 @@ const NavBarLinks = [
 
 const Navbar = () => {
   const { status } = useSelector(userSelector);
+  const [trigger, { isSuccess }] = useLazyLogoutUserQuery();
 
   //Link Active Logic
   const isActive = ({ isActive }) =>
@@ -85,7 +87,12 @@ const Navbar = () => {
                       <UserCircleIcon className="object-cover w-full h-full text-gray-700" />
                     </div>
                   </Link>
-                  <NavLink to="/hfhfhfhh" type="button" className={isActive}>
+                  <NavLink
+                    to={isSuccess && "/"}
+                    type="button"
+                    onClick={() => trigger()}
+                    className={isActive}
+                  >
                     Logout
                   </NavLink>
                 </>

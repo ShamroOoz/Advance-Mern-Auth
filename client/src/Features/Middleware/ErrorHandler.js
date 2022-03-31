@@ -17,9 +17,12 @@ export const ErrorHandler = (httpStatus, { success, error }) => {
       !success && customToast(error);
       break;
     case 400:
-      !success && customToast("credentials Missing....Fill all fields..");
+      !success && customToast(error);
       break;
     case 401:
+      !success && customToast(error);
+      break;
+    case 404:
       !success && customToast(error);
       break;
     // Other errors, throw an error message directly
