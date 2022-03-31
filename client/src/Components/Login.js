@@ -5,7 +5,8 @@ import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useLoginUserMutation } from "../Features/Slices/AuthapiSlice";
-
+import { useDispatch, useSelector } from "react-redux";
+import { setpersistState, userSelector } from "../Features/Slices/authSlice";
 import {
   loginValidationSchema,
   loginInitialValues,
@@ -14,8 +15,10 @@ import {
 
 const Login = () => {
   const [LoginUser, { isLoading }] = useLoginUserMutation();
-  let navigate = useNavigate();
-  let location = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const { persist } = useSelector(userSelector);
 
   let from = location.state?.from?.pathname || "/";
 
@@ -74,6 +77,21 @@ const Login = () => {
                 <FormikControl key={input.id} {...input} />
               ))}
 
+              <div className="form-check my-3">
+                <input
+                  className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
+                  type="checkbox"
+                  onChange={() => dispatch(setpersistState())}
+                  checked={persist}
+                  id="deviceTrust"
+                />
+                <label
+                  className="form-check-label inline-block text-gray-800 font-bold"
+                  htmlFor="deviceTrust"
+                >
+                  Trust This device
+                </label>
+              </div>
               <div className="mt-4">
                 <button
                   disabled={!isValid || isSubmitting}

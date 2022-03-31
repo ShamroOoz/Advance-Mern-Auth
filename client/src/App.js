@@ -18,7 +18,14 @@ const App = () => {
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* public routes */}
-        <Route index element={<Home />} />
+        <Route element={<RequireAuth Public={true} />}>
+          <Route index element={<Home />} />
+          <Route path="/about" element={<div>About Page</div>} />
+          <Route path="/contact" element={<div>Contact Page</div>} />
+
+          {/* 404 */}
+          <Route path="*" element={<Notfound />} />
+        </Route>
 
         {/* Auth Route */}
         <Route element={<UnauthComp />}>
@@ -33,9 +40,6 @@ const App = () => {
         <Route element={<RequireAuth />}>
           <Route path="user-profile" element={<Userprofile />} />
         </Route>
-
-        {/* 404 */}
-        <Route path="*" element={<Notfound />} />
       </Route>
     </Routes>
   );

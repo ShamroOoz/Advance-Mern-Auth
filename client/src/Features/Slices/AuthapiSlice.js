@@ -1,5 +1,4 @@
 import { GlobalSplitApi } from "../GlobalSplitApi";
-import { useDispatch } from "react-redux";
 
 export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
   reducerPath: "authApi",
@@ -47,6 +46,13 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
     privateData: builder.query({
       query: () => ({ url: "private", method: "get", credentials: "include" }),
     }),
+    refreshToken: builder.query({
+      query: () => ({
+        url: "/auth/refresh",
+        method: "get",
+        credentials: "include",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -56,6 +62,7 @@ export const {
   useLoginUserMutation,
   useForgetPasswordMutation,
   useResetPasswordMutation,
+  useRefreshTokenQuery,
   useLazyPrivateDataQuery,
   useLazyLogoutUserQuery,
 } = AuthapiSlice;
