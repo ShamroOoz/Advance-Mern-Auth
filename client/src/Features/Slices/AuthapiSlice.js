@@ -19,6 +19,21 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
         credentials: "include",
       }),
     }),
+    logoutUser: builder.query({
+      query: () => ({
+        url: "auth/logout",
+        method: "get",
+        credentials: "include",
+      }),
+    }),
+
+    refreshToken: builder.query({
+      query: () => ({
+        url: "/auth/refresh",
+        method: "get",
+        credentials: "include",
+      }),
+    }),
     forgetPassword: builder.mutation({
       query: (body) => ({
         url: "auth/forgotpassword",
@@ -35,23 +50,9 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
         credentials: "include",
       }),
     }),
-    logoutUser: builder.query({
-      query: () => ({
-        url: "auth/logout",
-        method: "get",
-        credentials: "include",
-      }),
-    }),
 
     privateData: builder.query({
       query: () => ({ url: "private", method: "get", credentials: "include" }),
-    }),
-    refreshToken: builder.query({
-      query: () => ({
-        url: "/auth/refresh",
-        method: "get",
-        credentials: "include",
-      }),
     }),
   }),
   overrideExisting: false,

@@ -1,12 +1,10 @@
 import React from "react";
 import Oauthbutton from "../Pages/Oauthbutton";
-import { Formik } from "formik";
-import { Form } from "formik";
+import { Formik, Field, Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useLoginUserMutation } from "../Features/Slices/AuthapiSlice";
-import { useDispatch, useSelector } from "react-redux";
-import { setpersistState, userSelector } from "../Features/Slices/authSlice";
+
 import {
   loginValidationSchema,
   loginInitialValues,
@@ -17,12 +15,11 @@ const Login = () => {
   const [LoginUser, { isLoading }] = useLoginUserMutation();
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const { persist } = useSelector(userSelector);
 
   let from = location.state?.from?.pathname || "/";
 
   const onSubmit = async (values, actions) => {
+    console.log(values);
     let data = await LoginUser(values).unwrap();
     if (data && data?.sucess) {
       actions.setSubmitting(false);
@@ -78,12 +75,11 @@ const Login = () => {
               ))}
 
               <div className="form-check my-3">
-                <input
-                  className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
-                  type="checkbox"
-                  onChange={() => dispatch(setpersistState())}
-                  checked={persist}
+                <Field
                   id="deviceTrust"
+                  type="checkbox"
+                  name="persist"
+                  className="form-check-input appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-blue-600 checked:border-blue-600 focus:outline-none transition duration-200 mt-1 align-top bg-no-repeat bg-center bg-contain float-left mr-2 cursor-pointer"
                 />
                 <label
                   className="form-check-label inline-block text-gray-800 font-bold"

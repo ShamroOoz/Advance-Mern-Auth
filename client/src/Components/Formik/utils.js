@@ -19,6 +19,7 @@ export const resetValidationSchem = Yup.object({
 export const loginValidationSchema = Yup.object({
   email: Yup.string().email().required("Email Required"),
   password: Yup.string().required("Password is Required"),
+  persist: Yup.boolean(),
 });
 
 export const singUpInitialValues = {
@@ -36,6 +37,7 @@ export const resetInitialValues = {
 export const loginInitialValues = {
   email: "",
   password: "",
+  persist: false,
 };
 
 export const resetInputs = [
@@ -102,10 +104,3 @@ export const loginInputs = [
     name: "password",
   },
 ];
-
-export const onSubmit = (values, actions) => {
-  console.log("Form data", values);
-  console.log(actions);
-  actions.setSubmitting(false);
-  actions.resetForm();
-};

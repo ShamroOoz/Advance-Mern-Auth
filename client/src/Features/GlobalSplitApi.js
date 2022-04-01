@@ -2,7 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { ErrorHandler } from "./Middleware/ErrorHandler";
 import toast from "react-hot-toast";
 import { ShieldCheckIcon } from "@heroicons/react/outline";
-import { updateAccessToken, resetTodefault } from "./Slices/authSlice";
+import { updateAccessToken } from "./Slices/authSlice";
+import { AuthapiSlice } from "./Slices/AuthapiSlice";
 import { Mutex } from "async-mutex";
 
 const customToast = () =>
@@ -38,7 +39,11 @@ const baseQueryWithIntercept = async (args, api, extraOptions) => {
 
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
+  if (
+    result.error &&
+    result.error.status === 401 &&
+    api.endpoint !== "refreshToken"
+  ) {
     // checking whether the mutex is locked
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
@@ -54,7 +59,8 @@ const baseQueryWithIntercept = async (args, api, extraOptions) => {
           // retry the initial query
           result = await baseQuery(args, api, extraOptions);
         } else {
-          api.dispatch(resetTodefault());
+          let call = await AuthapiSlice.endpoints.logoutUser.initiate();
+          return call.unsubscribe;
         }
       } finally {
         // release must be called once the mutex should be released again.
@@ -74,7 +80,7 @@ const baseQueryWithIntercept = async (args, api, extraOptions) => {
     const { status, data } = error;
     //Handle errors based on status
     ErrorHandler(status, data);
-    throw new Error(data?.success);
+    throw new Error(data?.error);
   }
   if (data) {
     customToast();

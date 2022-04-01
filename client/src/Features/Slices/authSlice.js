@@ -27,6 +27,17 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder.addMatcher(
       isAnyOf(
+        api.endpoints.loginUser.matchFulfilled,
+        api.endpoints.loginUser.matchRejected
+      ),
+      (state, { meta }) => {
+        state.persist = meta.arg.originalArgs.persist;
+        localStorage.setItem("persist", state.persist);
+      }
+    );
+
+    builder.addMatcher(
+      isAnyOf(
         api.endpoints.logoutUser.matchFulfilled,
         api.endpoints.logoutUser.matchRejected
       ),
