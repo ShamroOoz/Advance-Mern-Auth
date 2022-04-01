@@ -6,12 +6,12 @@ import { updateAccessToken } from "./Slices/authSlice";
 import { AuthapiSlice } from "./Slices/AuthapiSlice";
 import { Mutex } from "async-mutex";
 
-const customToast = () =>
+const customToast = (message) =>
   toast.custom(
     <div className="px-8 py-6 bg-green-400 text-white flex justify-between rounded">
       <div className="flex items-center">
         <ShieldCheckIcon className="h-7 w-7 mr-6" />
-        <p>Success</p>
+        {message?.length ? <p>{message} </p> : <p>Success</p>}
       </div>
     </div>
   );
@@ -83,7 +83,7 @@ const baseQueryWithIntercept = async (args, api, extraOptions) => {
     throw new Error(data?.error);
   }
   if (data) {
-    customToast();
+    customToast(data?.message);
     return result;
   }
   throw new Error(data?.message);

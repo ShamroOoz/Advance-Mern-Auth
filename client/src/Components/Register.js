@@ -15,18 +15,13 @@ import {
 const Register = () => {
   //update hOOKK
   const [RegisterUser, { isLoading }] = useRegisterUserMutation();
-  let navigate = useNavigate();
-  let location = useLocation();
-
-  let from = location.state?.from?.pathname || "/";
 
   //
   const onSubmit = async (values, actions) => {
     let data = await RegisterUser(values).unwrap();
-    if (data && data?.sucess) {
+    if (data) {
       actions.setSubmitting(false);
       actions.resetForm();
-      navigate(from, { replace: true });
     }
   };
 

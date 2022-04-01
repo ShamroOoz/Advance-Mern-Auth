@@ -22,12 +22,16 @@ export const ErrorHandler = (httpStatus, { success, error }) => {
     case 401:
       !success && customToast(error);
       break;
+    case 403:
+      !success && customToast(error);
+      break;
     case 404:
       !success && customToast(error);
+      window.location.replace("/custom-verified-email");
       break;
     // Other errors, throw an error message directly
     default:
-      !success && customToast(" Server Error..Contact website Creator");
+      !success && customToast(" Server Error..Contact website Creator...");
       break;
   }
 };

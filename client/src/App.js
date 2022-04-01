@@ -9,6 +9,11 @@ import ForgetPassword from "./Components/ForgetPassword";
 import PasswordReset from "./Components/PasswordReset";
 import Userprofile from "./Components/Userprofile";
 import {
+  Emailverification,
+  CustomEmailVerification,
+} from "./Components/Emailverification";
+
+import {
   RequireAuth,
   UnauthComp,
 } from "./Components/Router Protector/RequireAuth";
@@ -35,6 +40,11 @@ const App = () => {
         </Route>
 
         <Route path="password-reset/:token" element={<PasswordReset />} />
+        <Route path="verified-email/:token" element={<Emailverification />} />
+        <Route
+          path="custom-verified-email"
+          element={<CustomEmailVerification />}
+        />
 
         {/* Protected Route */}
         <Route element={<RequireAuth />}>

@@ -26,11 +26,25 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
         credentials: "include",
       }),
     }),
-
+    verifyEmail: builder.query({
+      query: (token) => ({
+        url: `auth/verified-email/${token}`,
+        method: "get",
+        credentials: "include",
+      }),
+    }),
     refreshToken: builder.query({
       query: () => ({
         url: "/auth/refresh",
         method: "get",
+        credentials: "include",
+      }),
+    }),
+    resendVerifyEmail: builder.mutation({
+      query: (body) => ({
+        url: "auth/resend-verify-email",
+        method: "Post",
+        body,
         credentials: "include",
       }),
     }),
@@ -60,6 +74,8 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
 
 export const {
   useRegisterUserMutation,
+  useResendVerifyEmailMutation,
+  useVerifyEmailQuery,
   useLoginUserMutation,
   useForgetPasswordMutation,
   useResetPasswordMutation,

@@ -95,9 +95,10 @@ const register = async (req, res, next) => {
         subject: "Verified Email request",
         text: message,
       });
-      res
-        .status(201)
-        .json({ success: true, data: "Verifaction Email Sent Visit Email.." });
+      res.status(201).json({
+        success: true,
+        message: "Verification Email Sent Visit Email..",
+      });
     } catch (error) {
       console.log(error);
       user.resetPasswordToken = undefined;
@@ -125,7 +126,9 @@ const verifyUser = async (req, res, next) => {
     });
 
     if (!user) {
-      return next(new ErrorResponse("Invalid Token , Try new token..", 400));
+      return next(
+        new ErrorResponse("Your Link is expire.try to send new one", 404)
+      );
     }
 
     user.isVerify = true;
@@ -136,10 +139,54 @@ const verifyUser = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      data: "Your are verified,Go to login..",
+      message: "Your are verified,Go to login..",
     });
   } catch (err) {
     next(err);
+  }
+};
+
+const resendVerifyEmail = async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) return next(new ErrorResponse("credentials Missing....", 400));
+
+  try {
+    const user = await User.findOne({ email }).exec();
+
+    if (!user) return next(new ErrorResponse("Invalid credentials", 403));
+
+    console.log(user);
+
+    if (user.isVerify)
+      return res.status(201).json({
+        success: true,
+        message: "This user is Already verified...Try to Login",
+      });
+
+    // verified emai Token Gen and add to database hashed (private) version of token
+    const message = user.getisVerifiedToken();
+    await user.save();
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Verified Email request",
+        text: message,
+      });
+      res.status(201).json({
+        success: true,
+        message: "Verification Email Sent Visit Email..",
+      });
+    } catch (error) {
+      console.log(error);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      next(new ErrorResponse("Email could not be sent", 500));
+    }
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -163,7 +210,7 @@ const forgotPassword = async (req, res, next) => {
         subject: "Password Reset Request",
         text: message,
       });
-      res.status(200).json({ success: true, data: "Email Sent" });
+      res.status(200).json({ success: true, message: "Email Sent" });
     } catch (error) {
       console.log(error);
       user.resetPasswordToken = undefined;
@@ -200,7 +247,7 @@ const resetPassword = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      data: "Password Updated Success",
+      message: "Password Updated Success",
       token: user.getSignedJwtToken(),
     });
   } catch (err) {
@@ -212,6 +259,7 @@ export {
   login,
   register,
   verifyUser,
+  resendVerifyEmail,
   forgotPassword,
   resetPassword,
   handleRefreshToken,

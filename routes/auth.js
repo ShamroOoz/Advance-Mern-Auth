@@ -7,6 +7,7 @@ import {
   login,
   register,
   verifyUser,
+  resendVerifyEmail,
   Logout,
   forgotPassword,
   resetPassword,
@@ -16,6 +17,8 @@ import {
 router.route("/register").post(register);
 
 router.route("/verified-email/:resetToken").get(verifyUser);
+
+router.route("/resend-verify-email").post(resendVerifyEmail);
 
 router.route("/login").post(login);
 

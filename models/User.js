@@ -65,7 +65,7 @@ UserSchema.statics.login = async function (email, password, cookies, res) {
 
   if (user) {
     if (!user.isVerify) {
-      throw new ErrorResponse("Your email address is not verified.", 400);
+      throw new ErrorResponse("Your email address is not verified.", 404);
     }
 
     const auth = await bcrypt.compare(password, user.password);
@@ -111,7 +111,7 @@ UserSchema.statics.login = async function (email, password, cookies, res) {
       return result;
     }
   }
-  throw new ErrorResponse("Invalid credentials", 401);
+  throw new ErrorResponse("Invalid credentials", 403);
 };
 
 UserSchema.statics.RefreshTokenfun = async function (refreshToken, res) {
