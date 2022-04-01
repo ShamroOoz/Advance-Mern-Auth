@@ -28,12 +28,14 @@ const Logout = async (req, res, next) => {
       return next(new ErrorResponse("No content", 204));
     }
     // Delete refreshToken in db
-    foundUser.refreshToken = "";
-    const result = await foundUser.save();
+    foundUser.refreshToken = foundUser.refreshToken.filter(
+      (rt) => rt !== refreshToken
+    );
+    await foundUser.save();
 
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
 
-    res.status(201).json({ sucess: true, message: "Logout Done..." });
+    res.status(204).json({ sucess: true, message: "Logout Done..." });
   } catch (error) {
     next(error);
   }
@@ -47,8 +49,11 @@ const handleRefreshToken = async (req, res, next) => {
 
   const refreshToken = cookies.jwt;
 
+  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+
   try {
-    const user = await User.RefreshTokenfun(refreshToken);
+    const user = await User.RefreshTokenfun(refreshToken, res);
+
     sendToken(user, 200, res);
   } catch (error) {
     next(error);
@@ -56,17 +61,13 @@ const handleRefreshToken = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
+  const cookies = req.cookies;
+  console.log(`cookie available at login: ${JSON.stringify(cookies)}`);
+
   const { email, password } = req.body;
   try {
     // Check that user exists by email
-    const user = await User.login(email, password);
-
-    res.cookie("jwt", user.refreshToken, {
-      httpOnly: true,
-      sameSite: "none",
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    const user = await User.login(email, password, cookies, res);
     sendToken(user, 200, res);
   } catch (err) {
     next(err);

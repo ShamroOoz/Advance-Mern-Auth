@@ -20,7 +20,7 @@ const PasswordReset = () => {
     if (data && data?.success) {
       actions.setSubmitting(false);
       actions.resetForm();
-      navigate("/login");
+      navigate("/login", { replace: true });
     }
   };
 

@@ -80,7 +80,7 @@ const baseQueryWithIntercept = async (args, api, extraOptions) => {
     customToast();
     return result;
   }
-  throw new Error(data.message);
+  throw new Error(data?.message);
 };
 
 export const GlobalSplitApi = createApi({

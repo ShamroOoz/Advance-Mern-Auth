@@ -25,7 +25,7 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
     select: false,
   },
-  refreshToken: String,
+  refreshToken: [String],
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
@@ -50,35 +50,115 @@ UserSchema.methods.getSignedJwtToken = function () {
 
 // static method to login user
 // this === model("User")
-UserSchema.statics.login = async function (email, password) {
+UserSchema.statics.login = async function (email, password, cookies, res) {
   //check email and password available...
   if (!email || !password) {
     throw new ErrorResponse("Please provide an email and password", 400);
   }
+
   const user = await this.findOne({ email }).select("+password");
   if (user) {
     const auth = await bcrypt.compare(password, user.password);
     if (auth) {
-      const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        expiresIn: "1d",
-      });
-      user.refreshToken = refreshToken;
+      // Changed to let keyword
+      let newRefreshTokenArray = !cookies?.jwt
+        ? user.refreshToken
+        : user.refreshToken.filter((rt) => rt !== cookies.jwt);
+
+      if (cookies?.jwt) {
+        const refreshToken = cookies.jwt;
+        const foundToken = await this.findOne({ refreshToken }).exec();
+        // Detected refresh token reuse!
+        if (!foundToken) {
+          console.log("attempted refresh token reuse at login!");
+          // clear out ALL previous refresh tokens
+          newRefreshTokenArray = [];
+          res.clearCookie("jwt", {
+            httpOnly: true,
+            sameSite: "None",
+            secure: true,
+          });
+        }
+      }
+      const newRefreshToken = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1d",
+        }
+      );
+      // Saving refreshToken with current user
+      user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
       const result = await user.save();
+
+      res.cookie("jwt", newRefreshToken, {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
       return result;
     }
   }
   throw new ErrorResponse("Invalid credentials", 401);
 };
 
-UserSchema.statics.RefreshTokenfun = async function (refreshToken) {
+UserSchema.statics.RefreshTokenfun = async function (refreshToken, res) {
   const foundUser = await this.findOne({ refreshToken }).exec();
-  if (!foundUser) throw new ErrorResponse("Forbidden access this route", 403);
+
+  if (!foundUser) {
+    jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
+      if (err) throw new ErrorResponse("Forbidden access this route", 403); //Forbidden
+
+      console.log("attempted refresh token reuse!");
+
+      const hackedUser = await this.findById(decoded.id).exec();
+
+      hackedUser.refreshToken = [];
+
+      const result = await hackedUser.save();
+
+      console.log(result);
+    });
+    throw new ErrorResponse("Forbidden access this route", 403);
+  }
+
+  const newRefreshTokenArray = foundUser.refreshToken.filter(
+    (rt) => rt !== refreshToken
+  );
+
   // evaluate jwt
-  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
+    if (err) {
+      console.log("expired refresh token");
+      foundUser.refreshToken = [...newRefreshTokenArray];
+      const result = await foundUser.save();
+      console.log(result);
+    }
     if (err || foundUser.id !== decoded.id)
       throw new ErrorResponse("Forbidden access this route", 403);
   });
-  return foundUser;
+
+  const newRefreshToken = jwt.sign(
+    { id: foundUser._id },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "1d",
+    }
+  );
+  // Saving refreshToken with current user
+  foundUser.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+  const result = await foundUser.save();
+  // Creates Secure Cookie with refresh token
+  res.cookie("jwt", newRefreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "None",
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+
+  return result;
 };
 
 UserSchema.methods.getResetPasswordToken = function () {

@@ -1,10 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, isAnyOf } from "@reduxjs/toolkit";
 import { AuthapiSlice as api } from "./AuthapiSlice";
 
 const initialState = {
   accessToken: null,
   status: false,
-  persist: localStorage.getItem("persist").toLowerCase() === "true" || false,
+  persist: localStorage.getItem("persist")?.toLowerCase() === "true" || false,
 };
 
 const authSlice = createSlice({
@@ -17,7 +17,7 @@ const authSlice = createSlice({
     },
     setpersistState(state, action) {
       state.persist = !state.persist;
-      localStorage.setItem("persist", !!state.persist);
+      localStorage.setItem("persist", state.persist);
     },
     resetTodefault(state) {
       state.accessToken = null;
@@ -26,11 +26,15 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addMatcher(
-      api.endpoints.logoutUser.matchFulfilled,
+      isAnyOf(
+        api.endpoints.logoutUser.matchFulfilled,
+        api.endpoints.logoutUser.matchRejected
+      ),
       (state, action) => {
         state.accessToken = null;
         state.status = false;
-        state.status = false;
+        state.persist = false;
+        localStorage.setItem("persist", false);
       }
     );
     builder.addMatcher(

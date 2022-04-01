@@ -8,13 +8,14 @@ export const RequireAuth = ({ Public }) => {
   const { status, accessToken, persist } = useSelector(userSelector);
 
   let location = useLocation();
+
   const { isFetching, isLoading } = useRefreshTokenQuery(undefined, {
     skip: !accessToken && !persist,
   });
 
-  if (Public) return <Outlet />;
-
   if (isFetching || isLoading) return <Loading />;
+
+  if (Public) return <Outlet />;
 
   if (!status) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -25,6 +26,8 @@ export const RequireAuth = ({ Public }) => {
 
 export const UnauthComp = () => {
   const { status, accessToken, persist } = useSelector(userSelector);
+
+  console.log({ status, accessToken, persist });
 
   const { isFetching, isLoading } = useRefreshTokenQuery(undefined, {
     skip: !accessToken && !persist,
