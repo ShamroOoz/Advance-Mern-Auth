@@ -27,17 +27,6 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder.addMatcher(
       isAnyOf(
-        api.endpoints.loginUser.matchFulfilled,
-        api.endpoints.loginUser.matchRejected
-      ),
-      (state, { meta }) => {
-        state.persist = meta.arg.originalArgs.persist;
-        localStorage.setItem("persist", state.persist);
-      }
-    );
-
-    builder.addMatcher(
-      isAnyOf(
         api.endpoints.logoutUser.matchFulfilled,
         api.endpoints.logoutUser.matchRejected
       ),
@@ -50,10 +39,12 @@ const authSlice = createSlice({
     );
     builder.addMatcher(
       api.endpoints.loginUser.matchFulfilled,
-      (state, { payload }) => {
+      (state, { payload, meta }) => {
         if (payload?.sucess) {
           state.accessToken = payload?.token;
           state.status = true;
+          state.persist = meta.arg.originalArgs.persist;
+          localStorage.setItem("persist", state.persist);
         }
       }
     );

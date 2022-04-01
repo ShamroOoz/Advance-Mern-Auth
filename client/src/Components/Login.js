@@ -19,7 +19,6 @@ const Login = () => {
   let from = location.state?.from?.pathname || "/";
 
   const onSubmit = async (values, actions) => {
-    console.log(values);
     let data = await LoginUser(values).unwrap();
     if (data && data?.sucess) {
       actions.setSubmitting(false);

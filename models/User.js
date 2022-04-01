@@ -26,6 +26,11 @@ const UserSchema = new mongoose.Schema({
     select: false,
   },
   refreshToken: [String],
+
+  isVerify: {
+    type: Boolean,
+    default: false,
+  },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
 });
@@ -57,7 +62,12 @@ UserSchema.statics.login = async function (email, password, cookies, res) {
   }
 
   const user = await this.findOne({ email }).select("+password");
+
   if (user) {
+    if (!user.isVerify) {
+      throw new ErrorResponse("Your email address is not verified.", 400);
+    }
+
     const auth = await bcrypt.compare(password, user.password);
     if (auth) {
       // Changed to let keyword
@@ -179,6 +189,30 @@ UserSchema.methods.getResetPasswordToken = function () {
   // HTML Message
   const message = `
       <h1>You have requested a password reset</h1>
+      <p>Please make a put request to the following link:</p>
+      <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
+    `;
+  return message;
+};
+
+UserSchema.methods.getisVerifiedToken = function () {
+  const verifyToken = crypto.randomBytes(20).toString("hex");
+
+  // Hash token (private key) and save to database
+  this.resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(verifyToken)
+    .digest("hex");
+
+  // Set token expire date
+  this.resetPasswordExpire = Date.now() + 10 * (60 * 1000); // Ten Minutes
+
+  // Create reset url to email to provided email
+  const resetUrl = `${process.env.CLIENT_URL}/verified-email/${verifyToken}`;
+
+  // HTML Message
+  const message = `
+      <h1>Email verification link Below..</h1>
       <p>Please make a put request to the following link:</p>
       <a href=${resetUrl} clicktracking=off>${resetUrl}</a>
     `;

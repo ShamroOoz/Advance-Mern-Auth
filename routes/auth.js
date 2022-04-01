@@ -6,6 +6,7 @@ const router = Router();
 import {
   login,
   register,
+  verifyUser,
   Logout,
   forgotPassword,
   resetPassword,
@@ -13,6 +14,8 @@ import {
 } from "../controllers/auth.js";
 
 router.route("/register").post(register);
+
+router.route("/verified-email/:resetToken").get(verifyUser);
 
 router.route("/login").post(login);
 

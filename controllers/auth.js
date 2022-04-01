@@ -85,16 +85,67 @@ const register = async (req, res, next) => {
       email,
       password,
     });
-    sendToken(user, 201, res);
+    // verified emai Token Gen and add to database hashed (private) version of token
+    const message = user.getisVerifiedToken();
+    await user.save();
+
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Verified Email request",
+        text: message,
+      });
+      res
+        .status(201)
+        .json({ success: true, data: "Verifaction Email Sent Visit Email.." });
+    } catch (error) {
+      console.log(error);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save();
+      next(new ErrorResponse("Email could not be sent", 500));
+    }
+    //sendToken(user, 201, res);
   } catch (error) {
     next(error);
+  }
+};
+
+const verifyUser = async (req, res, next) => {
+  // Compare token in URL params to hashed token
+  const resetPasswordToken = crypto
+    .createHash("sha256")
+    .update(req.params.resetToken)
+    .digest("hex");
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return next(new ErrorResponse("Invalid Token , Try new token..", 400));
+    }
+
+    user.isVerify = true;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    res.status(201).json({
+      success: true,
+      data: "Your are verified,Go to login..",
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
 const forgotPassword = async (req, res, next) => {
   // Send Email to email provided but first check if user exists
   const { email } = req.body;
-  console.log(email);
 
   try {
     const user = await User.findOne({ email });
@@ -160,6 +211,7 @@ const resetPassword = async (req, res, next) => {
 export {
   login,
   register,
+  verifyUser,
   forgotPassword,
   resetPassword,
   handleRefreshToken,
