@@ -38,22 +38,17 @@ const authSlice = createSlice({
       }
     );
     builder.addMatcher(
-      api.endpoints.loginUser.matchFulfilled,
+      isAnyOf(
+        api.endpoints.loginUser.matchFulfilled,
+        api.endpoints.googleLogin.matchFulfilled
+      ),
+
       (state, { payload, meta }) => {
         if (payload?.sucess) {
           state.accessToken = payload?.token;
           state.status = true;
-          state.persist = meta.arg.originalArgs.persist;
+          state.persist = meta.arg?.originalArgs?.persist;
           localStorage.setItem("persist", state.persist);
-        }
-      }
-    );
-    builder.addMatcher(
-      api.endpoints.registerUser.matchFulfilled,
-      (state, { payload }) => {
-        if (payload?.sucess) {
-          state.accessToken = payload?.token;
-          state.status = true;
         }
       }
     );

@@ -19,6 +19,14 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
         credentials: "include",
       }),
     }),
+    googleLogin: builder.mutation({
+      query: (body) => ({
+        url: "auth/oAuth-login",
+        method: "Post",
+        body,
+        credentials: "include",
+      }),
+    }),
     logoutUser: builder.query({
       query: () => ({
         url: "auth/logout",
@@ -75,6 +83,7 @@ export const AuthapiSlice = GlobalSplitApi.injectEndpoints({
 export const {
   useRegisterUserMutation,
   useResendVerifyEmailMutation,
+  useGoogleLoginMutation,
   useVerifyEmailQuery,
   useLoginUserMutation,
   useForgetPasswordMutation,

@@ -16,8 +16,10 @@ const customToast = (message) =>
     </div>
   );
 
+//https://backend-advance-mern-auth-shamroz73.vercel.app/api/
+
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://backend-advance-mern-auth-shamroz73.vercel.app/api/",
+  baseUrl: "http://localhost:5000/api/",
   prepareHeaders: (headers, { getState }) => {
     const token = getState().user?.accessToken; // getState if we have a another slice in which we have saved token we can access it as well all othe slice data
     if (token) {

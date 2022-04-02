@@ -4,6 +4,7 @@ import { MenuIcon, UserCircleIcon } from "@heroicons/react/outline";
 import { useSelector } from "react-redux";
 import { userSelector } from "../Features/Slices/authSlice";
 import { useLazyLogoutUserQuery } from "../Features/Slices/AuthapiSlice";
+import { useGoogleLogout } from "react-google-login";
 
 const NavBarLinks = [
   { name: "Home", link: "/", id: 1 },
@@ -14,6 +15,11 @@ const NavBarLinks = [
 const Navbar = () => {
   const { status } = useSelector(userSelector);
   const [trigger, { isSuccess }] = useLazyLogoutUserQuery();
+
+  const { signOut } = useGoogleLogout({
+    clientId:
+      "110776137747-of2a84ud56v94lcbsoa5rcdhq7stpnu4.apps.googleusercontent.com",
+  });
 
   //Link Active Logic
   const isActive = ({ isActive }) =>
@@ -90,7 +96,10 @@ const Navbar = () => {
                   <NavLink
                     to={isSuccess && "/"}
                     type="button"
-                    onClick={() => trigger()}
+                    onClick={() => {
+                      signOut();
+                      trigger();
+                    }}
                     className={isActive}
                   >
                     Logout

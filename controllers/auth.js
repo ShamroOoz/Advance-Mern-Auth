@@ -2,6 +2,10 @@ import { User } from "../models/User.js";
 import sendEmail from "../utils/sendEmail.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
+import bcrypt from "bcryptjs";
+
+const client = new OAuth2Client(process.env.API_CLIENT_ID);
 
 const sendToken = (user, statusCode, res) => {
   const token = user.getSignedJwtToken();
@@ -60,15 +64,54 @@ const handleRefreshToken = async (req, res, next) => {
   }
 };
 
+const googleLoginOauth = async (req, res, next) => {
+  const { idToken } = req.body;
+
+  console.log(idToken);
+  try {
+    const {
+      payload: { email, name },
+    } = await client.verifyIdToken({
+      idToken,
+      audience: process.env.API_CLIENT_ID,
+    });
+
+    const user = await User.findOne({ email });
+
+    let cookies = { jwt: null };
+
+    console.log(user);
+
+    if (user) {
+      const result = await User.setCookies(user, cookies, res);
+      sendToken(result, 200, res);
+    } else {
+      const user = await User.create({
+        username: name,
+        email,
+        password: crypto.randomBytes(20).toString("hex"),
+        isVerify: true,
+      });
+
+      const result = await User.setCookies(user, cookies, res);
+      sendToken(result, 200, res);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 const login = async (req, res, next) => {
   const cookies = req.cookies;
   console.log(`cookie available at login: ${JSON.stringify(cookies)}`);
 
   const { email, password } = req.body;
+
   try {
     // Check that user exists by email
-    const user = await User.login(email, password, cookies, res);
-    sendToken(user, 200, res);
+    const user = await User.login(email, password);
+    const result = await User.setCookies(user, cookies, res);
+    sendToken(result, 200, res);
   } catch (err) {
     next(err);
   }
@@ -257,6 +300,7 @@ const resetPassword = async (req, res, next) => {
 
 export {
   login,
+  googleLoginOauth,
   register,
   verifyUser,
   resendVerifyEmail,

@@ -5,6 +5,7 @@ const router = Router();
 // Controllers
 import {
   login,
+  googleLoginOauth,
   register,
   verifyUser,
   resendVerifyEmail,
@@ -19,6 +20,8 @@ router.route("/register").post(register);
 router.route("/verified-email/:resetToken").get(verifyUser);
 
 router.route("/resend-verify-email").post(resendVerifyEmail);
+
+router.route("/oAuth-login").post(googleLoginOauth);
 
 router.route("/login").post(login);
 

@@ -11,27 +11,28 @@ const customToast = (message) =>
     </div>
   );
 
-export const ErrorHandler = (httpStatus, { success, error }) => {
+export const ErrorHandler = (httpStatus, data) => {
   switch (httpStatus) {
     case 409:
-      !success && customToast(error);
+      !data?.success && customToast(data?.error);
       break;
     case 400:
-      !success && customToast(error);
+      !data?.success && customToast(data?.error);
       break;
     case 401:
-      !success && customToast(error);
+      !data?.success && customToast(data?.error);
       break;
     case 403:
-      !success && customToast(error);
+      !data?.success && customToast(data?.error);
       break;
     case 404:
-      !success && customToast(error);
+      !data?.success && customToast(data?.error);
       window.location.replace("/custom-verified-email");
       break;
     // Other errors, throw an error message directly
     default:
-      !success && customToast(" Server Error..Contact website Creator...");
+      !data?.success &&
+        customToast(" Server Error..Contact website Creator...");
       break;
   }
 };

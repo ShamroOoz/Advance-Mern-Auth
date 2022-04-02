@@ -3,7 +3,7 @@ import Oauthbutton from "../Pages/Oauthbutton";
 import { Formik } from "formik";
 import { Form } from "formik";
 import FormikControl from "./Formik/FormikControl";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useRegisterUserMutation } from "../Features/Slices/AuthapiSlice";
 
 import {
@@ -13,7 +13,7 @@ import {
 } from "./Formik/utils";
 
 const Register = () => {
-  //update hOOKK
+  //Register hOOKK
   const [RegisterUser, { isLoading }] = useRegisterUserMutation();
 
   //

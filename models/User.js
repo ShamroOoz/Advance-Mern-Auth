@@ -55,7 +55,7 @@ UserSchema.methods.getSignedJwtToken = function () {
 
 // static method to login user
 // this === model("User")
-UserSchema.statics.login = async function (email, password, cookies, res) {
+UserSchema.statics.login = async function (email, password) {
   //check email and password available...
   if (!email || !password) {
     throw new ErrorResponse("Please provide an email and password", 400);
@@ -69,49 +69,52 @@ UserSchema.statics.login = async function (email, password, cookies, res) {
     }
 
     const auth = await bcrypt.compare(password, user.password);
+
     if (auth) {
-      // Changed to let keyword
-      let newRefreshTokenArray = !cookies?.jwt
-        ? user.refreshToken
-        : user.refreshToken.filter((rt) => rt !== cookies.jwt);
-
-      if (cookies?.jwt) {
-        const refreshToken = cookies.jwt;
-        const foundToken = await this.findOne({ refreshToken }).exec();
-        // Detected refresh token reuse!
-        if (!foundToken) {
-          console.log("attempted refresh token reuse at login!");
-          // clear out ALL previous refresh tokens
-          newRefreshTokenArray = [];
-          res.clearCookie("jwt", {
-            httpOnly: true,
-            sameSite: "None",
-            secure: true,
-          });
-        }
-      }
-      const newRefreshToken = jwt.sign(
-        { id: user._id },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "1d",
-        }
-      );
-      // Saving refreshToken with current user
-      user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
-      const result = await user.save();
-
-      res.cookie("jwt", newRefreshToken, {
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-
-      return result;
+      return user;
     }
   }
+
   throw new ErrorResponse("Invalid credentials", 403);
+};
+
+UserSchema.statics.setCookies = async function (user, cookies, res) {
+  // Changed to let keyword
+  let newRefreshTokenArray = !cookies?.jwt
+    ? user.refreshToken
+    : user.refreshToken.filter((rt) => rt !== cookies.jwt);
+
+  if (cookies?.jwt) {
+    const refreshToken = cookies.jwt;
+    const foundToken = await this.findOne({ refreshToken }).exec();
+
+    // Detected refresh token reuse!
+    if (!foundToken) {
+      console.log("attempted refresh token reuse at login!");
+      // clear out ALL previous refresh tokens
+      newRefreshTokenArray = [];
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      });
+    }
+  }
+  const newRefreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "1d",
+  });
+  // Saving refreshToken with current user
+  user.refreshToken = [...newRefreshTokenArray, newRefreshToken];
+
+  const result = await user.save();
+
+  res.cookie("jwt", newRefreshToken, {
+    httpOnly: true,
+    sameSite: "none",
+    secure: true,
+    maxAge: 24 * 60 * 60 * 1000,
+  });
+  return result;
 };
 
 UserSchema.statics.RefreshTokenfun = async function (refreshToken, res) {
