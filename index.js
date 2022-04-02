@@ -1,5 +1,5 @@
 import "dotenv/config";
-import express from "express";
+import express, { application } from "express";
 import { connectDB } from "./config/db.js";
 import corsOptions from "./config/corsOptions.js";
 import mongoose from "mongoose";
@@ -40,6 +40,10 @@ app.use(CookieParser());
 app.use("/api/auth", Authrouter);
 app.use("/api/private", Privaterouter);
 
+//welcome route
+app.all("/", (req, res, next) => {
+  res.send("Welcome to Backend application 😇 ✈ ");
+});
 //404 route
 app.all("*", (req, res, next) => {
   return next(new ErrorResponse("404 Not Found", 404));
